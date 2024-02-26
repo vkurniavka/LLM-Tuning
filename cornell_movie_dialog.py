@@ -180,7 +180,7 @@ class DialogDataset(Dataset):
 
     def process_dialog(self, dialog):
         # Tokenize each dialog
-        return self.tokenizer.encode(dialog)[block_size]
+        return self.tokenizer.encode(dialog)[:self.block_size]
 
     def __len__(self):
         return len(self.dialogs)

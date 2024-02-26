@@ -30,22 +30,24 @@ print('prepare model for train')
 model.train()
 optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
 
-print('start epoch')
-for epoch in range(3):  # Number of epochs
-    for batch in train_loader:
-        print('optimizer.zero_grad')
-        optimizer.zero_grad()
-        print('batch to cpu')
-        input_ids = batch.to('cpu')
-        print('model inputs')
-        outputs = model(input_ids=input_ids, labels=input_ids)
-        loss = outputs.loss
-        print('loss backword')
-        loss.backward()
-        print('step')
-        optimizer.step()
+try:
+    print('start epoch')
+    for epoch in range(3):  # Number of epochs
+        for batch in train_loader:
+            print('optimizer.zero_grad')
+            optimizer.zero_grad()
+            print('batch to cpu')
+            input_ids = batch.to('cpu')
+            print('model inputs')
+            outputs = model(input_ids=input_ids, labels=input_ids)
+            loss = outputs.loss
+            print('loss backword')
+            loss.backward()
+            print('step')
+            optimizer.step()
 
-    print(f"Epoch {epoch} completed")
-
+        print(f"Epoch {epoch} completed")
+except Exception as ex:
+    print(ex)
 
 
