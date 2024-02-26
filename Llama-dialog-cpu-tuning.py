@@ -23,6 +23,7 @@ batch_size = 1
 
 train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 print('dataset loaded successfully')
+print(full_dataset[0])
 
 
 # Fine-tuning the model
@@ -41,7 +42,7 @@ try:
             print('model inputs')
             outputs = model(input_ids=input_ids, labels=input_ids)
             loss = outputs.loss
-            print('loss backword')
+            print('loss backward')
             loss.backward()
             print('step')
             optimizer.step()
