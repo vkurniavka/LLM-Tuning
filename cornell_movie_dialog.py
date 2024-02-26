@@ -187,3 +187,21 @@ class DialogDataset(Dataset):
 
     def __getitem__(self, idx):
         return torch.tensor(self.dialogs[idx], dtype=torch.long)
+
+def generate_dialog_response(model, tokenizer, prompt, max_length=50):
+    # Encode the prompt text
+    encoded_input = tokenizer.encode(prompt, return_tensors='pt')
+    encoded_input = encoded_input.to('cpu')  # Move to the same device as your model
+
+    # Generate a response
+    output = model.generate(
+        encoded_input,
+        max_length=max_length,
+        pad_token_id=tokenizer.eos_token_id,
+        no_repeat_ngram_size=3,
+        early_stopping=True
+    )
+
+    # Decode the response
+    response = tokenizer.decode(output[0], skip_special_tokens=True)
+    return response

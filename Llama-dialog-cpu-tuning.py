@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, PreTrainedTokenizerFast
 from datasets import Split
 
-from cornell_movie_dialog import CornellMovieDialog, DialogDataset
+from cornell_movie_dialog import CornellMovieDialog, DialogDataset, generate_dialog_response
 
 model_name = "meta-llama/Llama-2-7b-chat-hf"  # Replace with the actual model name
 model = AutoModelForCausalLM.from_pretrained(model_name)
@@ -50,4 +50,6 @@ try:
 except Exception as ex:
     print(ex)
 
-
+prompt = "[Person A]: How are you today?\n[Person B]:"  # Example prompt
+response = generate_dialog_response(model, tokenizer, prompt)
+print(response)
