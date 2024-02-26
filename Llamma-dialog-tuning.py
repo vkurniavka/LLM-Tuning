@@ -6,17 +6,22 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
     TrainingArguments,
-    pipeline,
-    logging,
 )
 from peft import LoraConfig
 from trl import SFTTrainer
 
 from cornell_movie_dialog import CornellMovieDialog
 
-from llama_cpp import Llama
-
 os.environ['WANDB_DISABLED']="true"
+
+print(torch.backends.mps.is_available())
+print(torch.backends.mkl.is_available())
+print(torch.backends.cpu.get_cpu_capability())
+print(torch.backends.cuda.is_built())
+print(torch.backends.cudnn.is_available())
+print(torch.backends.mkldnn.is_available())
+print(torch.backends.openmp.is_available())
+print(torch.backends.quantized.engine)
 
 cornell_movie_dialog = CornellMovieDialog(data_dir="cornell movie-dialogs corpus")
 
@@ -45,11 +50,15 @@ quant_config = BitsAndBytesConfig(
     bnb_4bit_use_double_quant=False,
 )
 
+
+mps_device = torch.device("cpu")
+x = torch.ones(1, device=mps_device)
+print (x)
+
 model = AutoModelForCausalLM.from_pretrained(
     base_model,
     quantization_config=quant_config,
-    device_map={"": 0}
-)
+    device_map={"cpu":0})
 
 model.config.use_cache = False
 model.config.pretraining_tp = 1

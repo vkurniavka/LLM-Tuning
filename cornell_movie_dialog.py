@@ -5,7 +5,8 @@ import ast
 import os
 
 import datasets
-
+import torch
+from torch.utils.data import Dataset
 
 # TODO(cornell_movie_dialog): BibTeX citation
 _CITATION = """\
@@ -65,7 +66,8 @@ class CornellMovieDialog(datasets.GeneratorBasedBuilder):
                     "characterName2": datasets.Value("string"),
                     "utterance": datasets.features.Sequence(
                         {"text": datasets.Value("string"), "LineID": datasets.Value("string")}
-                    )
+                    ),
+                    "dialog": datasets.features.Sequence(datasets.Value("string"))
                     # These are the features of your dataset like images, labels ...
                 }
             ),
@@ -119,12 +121,14 @@ class CornellMovieDialog(datasets.GeneratorBasedBuilder):
             line_ids = conv[-1].replace("\n", "")
             line_ids = ast.literal_eval(line_ids.strip())
             lines_texts = []
+            dialog=[]
             # searching text corresponding to each lineID in line_ids in movie lines file
             for line_id in line_ids:
                 i = 0
                 while i < len(movie_lines_data) and movie_lines_data[i][0].strip() != line_id:
                     i += 1
-                lines_texts.append(movie_lines_data[i][0])  # if i < len(movie_lines_data) else '')
+                lines_texts.append(movie_lines_data[i][4])  # if i < len(movie_lines_data) else '')
+                dialog.append(f"[{movie_lines_data[i][3]}]: {movie_lines_data[i][4]}")
             # look for char names in movie character file
             j = 0
             while j < len(movie_char_data) and movie_char_data[j][0].strip() != char_id_1.strip():
@@ -159,4 +163,27 @@ class CornellMovieDialog(datasets.GeneratorBasedBuilder):
                 "characterName1": char_name_1,
                 "characterName2": char_name_2,
                 "utterance": {"text": lines_texts, "LineID": line_ids},
+                "dialog": dialog
             }
+
+
+class DialogDataset(Dataset):
+    def __init__(self, dataset, tokenizer, block_size=512):
+        self.tokenizer = tokenizer
+        self.block_size = block_size
+
+        # Load and process the dialogs
+        self.dialogs = []
+        for data in dataset:
+            dialog=data['dialog']
+            self.dialogs.append(self.process_dialog('\n'.join(dialog)))
+
+    def process_dialog(self, dialog):
+        # Tokenize each dialog
+        return self.tokenizer.encode(dialog)[block_size]
+
+    def __len__(self):
+        return len(self.dialogs)
+
+    def __getitem__(self, idx):
+        return torch.tensor(self.dialogs[idx], dtype=torch.long)
